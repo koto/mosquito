@@ -8,7 +8,7 @@
 
     // to be removed
     function log(m) {
-        console.warn(m);
+        console.debug(m);
     }
 
     function bind(scope, fn) {
@@ -76,7 +76,7 @@
             },
 
             sendRequest: function(event, types, url, method, body) {
-                log("yeah, sending " + url);
+                log("Sending XHR request to " + url);
                 var current_type = types.shift();
                 var xhr = this.factory(current_type);
                 // get first available type
@@ -124,7 +124,6 @@
             },
 
             handleResponse: function(event, xhr) {
-                log('readyState' + xhr.readyState);
                 if (xhr.readyState === 4) {
                     if (xhr.status == 200) {
                         this.handleSuccess(event, xhr);
@@ -149,7 +148,6 @@
     var fr = new FileReader;
 
     function requestUrl(url, method) {
-        log("Requesting " + url);
         var use_methods = ['cors-withcredentials'];
         // USE ['flash'] instead to use flash only, see browser.html
         $('body').trigger('request-start', [ use_methods, url, method, null ]);
@@ -172,7 +170,7 @@
         var response = '';
         var binaryBody = null;
         if (d.result === 'ok') {
-            log("Received success response from " + d.request.type);
+            log("Received success XHR response from " + d.request.type);
             if (d.response.bytes) {
               binaryBody = new Uint8Array(d.response.bytes.length); // Note:not xhr.responseText
               for (var i  = 0 ; i < d.response.bytes.length; i++) {
@@ -181,7 +179,7 @@
             }
             response = d.response.body; // MalaRIA does not report headers back to proxy clients
         } else {
-            log("Received error response");
+            log("Received error XHR response");
             // todo 502
             //document.getElementById('response').value = event.data;
             response = 'HTTP/1.1 502 Not accessible - ' + d;
@@ -277,7 +275,7 @@
     }
 
     function init() {
-        log('init');
+        log('Mosquito init');
         $('body').bind('request-start', bind(Connector, Connector.sendRequest));
         $('body').bind('response-load', bind(remoteController, remoteController.sendResponse));
         $('body').bind('response-error', bind(remoteController, remoteController.sendError));
