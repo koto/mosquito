@@ -39,8 +39,8 @@ Installation
 Usage
 -----
 
-  1. Serve webroot\ directory via HTTP server
-		e.g.
+  1. Serve `webroot\` directory via HTTP server - e.g.
+
 		$ cd webroot
 		$ python -m SimpleHTTPServer
 
@@ -48,23 +48,25 @@ Usage
 
 	    $ cd externals/MalaRIA-Proxy/proxy-backend
 	    $ sudo java malaria.MalariaServer dummy 8081 4444
-	    # launch malaria server with HTTP proxy on 4444 and connector proxy on 8081
+          # launch malaria server with HTTP proxy on 4444 and connector proxy on 8081
 
   3. Launch Websockify proxy
-	    [2nd shell]
+
 	    $ cd externals/websockify
 	    $ ./websockify 8082 localhost:8081
-	    # forward WebSocket connection from TCP:8082 via MalaRIA running on 8081
+	      # forward WebSocket connection from TCP:8082 via MalaRIA running on 8081
 
-	    or
+	 or
 
 	    $ cd externals\websockify-exe
 	    $ websockify.exe 8082 localhost:8081
 
   4. Find XSS vulnerability in Google Chrome extension
 
-  5. Generate mosquito hook at http://localhost:8000/generate.html. Victim MUST be able to  connect to base_url HTTP server and to ws_host:ws_port WebSocket server.
+  5. Generate mosquito hook at `http://localhost:8000/generate.html`. Victim MUST be able
+     to connect to `base_url` HTTP server and to `ws_host:ws_port` WebSocket server.
 
   6. Inject hook into extension
 
-  7. Use localhost:4444 as your HTTP proxy. You now can use Burp or your browser to send requests and receive responses.
+  7. Use `localhost:4444` as your HTTP proxy. You now can use Burp or your browser to send
+     requests and receive responses.
