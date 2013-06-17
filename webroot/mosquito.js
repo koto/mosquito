@@ -297,7 +297,7 @@
     if (typeof(jQuery) == 'undefined') {
         // load it
         var x = new XMLHttpRequest();
-        x.open("GET", params.base_url+ '/jquery-1.6.4.min.js?_=' + Math.random(), false);
+        x.open("GET", params.base_url+ 'jquery-1.6.4.min.js?_=' + Math.random(), false);
         x.onreadystatechange = function() {
             if (x.readyState == 4 && x.status == 200) {
                 eval(x.responseText);
