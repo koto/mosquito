@@ -22,7 +22,7 @@ Requirements
 ------------
 
   * [MalaRIA](https://github.com/koto/MalaRIA-Proxy) (JDK to compile)
-  * [websockify](https://github.com/kanaka/websockify) (Python and some libs to run it)>
+  * [websockify](https://github.com/kanaka/websockify) (Python and some libs to run it)
   * a confirmed content-script XSS vulnerability in Google Chrome extension
 
 Installation
@@ -39,12 +39,10 @@ Installation
         $ cd externals/MalaRIA-Proxy/proxy-backend
         $ javac malaria/*.java
 
-  3. Compile websockify - see (https://github.com/kanaka/websockify). Windows builds are already compiled in `externals/websockify-exe`
-
 Usage
 -----
 
-  1. Serve `webroot\` directory via HTTP server - e.g.
+  1. Serve `webroot/` directory via HTTP server - e.g.
 
 		$ cd webroot
 		$ python -m SimpleHTTPServer
@@ -52,21 +50,24 @@ Usage
   2. Launch MalaRIA server
 
 	    $ cd externals/MalaRIA-Proxy/proxy-backend
-	    $ sudo java malaria.MalariaServer dummy 8081 4444
+	    $ java malaria.MalariaServer dummy 8081 4444
           # launch malaria server with HTTP proxy on 4444 and connector proxy on 8081
 
   3. Launch Websockify proxy
 
-	    $ cd externals/websockify
-	    $ ./websockify 8082 localhost:8081
-	      # forward WebSocket connection from TCP:8082 via MalaRIA running on 8081
+     Linux
 
-	 or
+	    $ cd externals/websockify
+	    $ python ./websockify.py 8082 localhost:8081
+	      # forwards WebSocket connection from TCP:8082 via MalaRIA running on 8081
+
+	 Windows
 
 	    $ cd externals\websockify-exe
 	    $ websockify.exe 8082 localhost:8081
 
-     **You can also use `run.bat` on Windows to perform steps 1-3 for you.**
+     **You can also use `run.bat` on Windows / `run.sh` on Ubuntu-based systems
+     to perform steps 1-3 for you.**
 
   4. Find XSS vulnerability in Google Chrome extension
 

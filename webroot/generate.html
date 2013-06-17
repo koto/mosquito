@@ -27,7 +27,8 @@ window.xxxx = true;
 <br />
 <button onclick=generate() >Generate hook</button>
 <p>
-<code id="result" style="word-break:break-all;height:500px;width:90%;overflow:scroll;"></code>
+<code id="result" style="word-break:break-all;height:500px;width:90%;overflow:scroll;">&nbsp;</code>
+</p>
 <script>
 function generate() {
 	var payload = document.getElementById('payload').value
@@ -41,7 +42,7 @@ function generate() {
 	var encr = btoa(payload);
 	var final_payload = "eval(atob('"+encr +"'))";
 	console.log(final_payload);
-	document.getElementById('result').innerText = final_payload;
+	document.getElementById('result').innerHTML = final_payload;
 }
 </script>
 
