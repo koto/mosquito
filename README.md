@@ -62,6 +62,8 @@ Usage
 	    $ cd externals\websockify-exe
 	    $ websockify.exe 8082 localhost:8081
 
+     **You can also use `run.bat` on Windows to perform steps 1-3 for you.***
+
   4. Find XSS vulnerability in Google Chrome extension
 
   5. Generate mosquito hook at `http://localhost:8000/generate.html`. Victim MUST be able
