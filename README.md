@@ -1,9 +1,10 @@
 Mosquito
 ========
+by [Krzysztof Kotowicz](http://blog.kotowicz.net) - kkotowicz@gmail.com
 
-This is a *Google Chrome extension exploitation tool* allowing an attacker to leverage XSS found in extension content script to issue arbitrary cross-domain HTTP requests with victim browser (and victim cookies).
+Mosquito is a **Google Chrome extension exploitation tool** allowing an attacker to leverage XSS found in extension content script to issue arbitrary cross-domain HTTP requests with victim browser (and victim cookies).
 
-With this tool attacker can content-script XSS vulnerabilities in extensions based on manifest v1 and v2.
+With this tool attacker can exploit content-script XSS vulnerabilities in extensions based on manifest v1 and v2.
 
 Introduction
 -----------
@@ -70,3 +71,20 @@ Usage
 
   7. Use `localhost:4444` as your HTTP proxy. You now can use Burp or your browser to send
      requests and receive responses.
+
+
+Licence
+-------
+Mosquito - Chrome Extension exploitation tool Copyright (C) 2013 Krzysztof Kotowicz - http://blog.kotowicz.net
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
+
+
+See also
+--------
+  * [MalaRIA](http://erlend.oftedal.no/blog/?blogid=107)
+  * [cors-proxy-browser](http://koto.github.io/cors-proxy-browser/)
