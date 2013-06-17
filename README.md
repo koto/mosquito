@@ -29,13 +29,17 @@ Installation
 ------------
 
   1. Clone the repository
+
+  		$ git clone git://github.com/koto/mosquito.git
+  		$ cd mosquito
+  		$ git submodule update --init --recursive
+
   2. Compile MalaRIA
+
         $ cd externals/MalaRIA-Proxy/proxy-backend
         $ javac malaria/*.java
-  3. Compile websockify
-        https://github.com/kanaka/websockify
 
-       Windows builds are already compiled in externals/websockify-exe
+  3. Compile websockify - see (https://github.com/kanaka/websockify). Windows builds are already compiled in `externals/websockify-exe`
 
 Usage
 -----
@@ -62,7 +66,7 @@ Usage
 	    $ cd externals\websockify-exe
 	    $ websockify.exe 8082 localhost:8081
 
-     **You can also use `run.bat` on Windows to perform steps 1-3 for you.***
+     **You can also use `run.bat` on Windows to perform steps 1-3 for you.**
 
   4. Find XSS vulnerability in Google Chrome extension
 
