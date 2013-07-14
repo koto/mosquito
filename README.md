@@ -44,8 +44,7 @@ Usage
 
   1. Serve `webroot/` directory via HTTP server - e.g.
 
-		$ cd webroot
-		$ python -m SimpleHTTPServer
+		$ ./http-server.py webroot/ 8000
 
   2. Launch MalaRIA server
 
