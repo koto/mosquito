@@ -209,7 +209,7 @@
                 fr.onload = function(e) {
                     parseRequestFromProxy(e.target.result);
                 };
-                p.send('Hello');
+                p.send('Hello from ' + d.location.href);
                 p.onmessage = function(e) {
                     fr.readAsBinaryString(e.data);
                 };
