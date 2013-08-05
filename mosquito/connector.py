@@ -1,7 +1,10 @@
 from server import MosquitoTCPServer, MosquitoRequestHandler, MosquitoRequest
 import threading
+from libmproxy import flow
+from netlib.odict import ODictCaseless
 
 class MosquitoConnector:
+
     def __init__(self, host, port):
         self.server = MosquitoTCPServer((host, port), MosquitoRequestHandler)
         ip, port = self.server.server_address
@@ -15,6 +18,40 @@ class MosquitoConnector:
 
     def shutdown(self):
         pass
+
+    def build_mosquito_request(self, r):
+        flatheaders = []
+        for i in r.headers.keys():
+            flatheaders.append([i, "".join(r.headers.get(i))])
+        print flatheaders
+
+        m_r = MosquitoRequest('xhr',{
+            'url': r.get_url(), 
+            'method': r.method, 
+            'headers': flatheaders,
+            'body': r.content,
+        })
+        return m_r        
+    
+    def build_flow_response(self, req, status, status_text, headers, body):
+
+        headers = ODictCaseless()
+        for k,v in headers:
+            headers[k] = v
+        resp = flow.Response(req,
+                [1,1],
+                status, status_text,
+                headers,
+                body,
+                None)
+        return resp
+
+    def handle_flow_request(self, r):
+        m_req = self.build_mosquito_request(r)
+
+        status, statusText, headers, body = self.server.last_client.send_request_and_wait(m_req)
+        m_resp = self.build_flow_response(r, status, statusText, headers, body)
+        r.reply(m_resp)
 
     def handle_wsgi_request(self, environ, start_response):
         url = environ['wsgi.url_scheme'] + "://" + environ['HTTP_HOST'] + ':' + environ['SERVER_PORT'] + environ['PATH_INFO']
@@ -37,7 +74,8 @@ class MosquitoConnector:
             'body': environ['wsgi.input'].read(),
         })
 
-        status, headers, body = self.server.last_client.send_request_and_wait(r)
+        status, status_text, headers, body = self.server.last_client.send_request_and_wait(r)
+        status = "%d %s" % (resp['data']['status'], resp['data']['statusText'])
         #print headers, body
         start_response(status, headers)
         print "end wsgi"

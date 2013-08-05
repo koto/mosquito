@@ -98,8 +98,8 @@ class MosquitoRequestHandler(SocketServer.BaseRequestHandler):
         h.append(t)
         print t
 
-        return ( "%d %s" % (resp['data']['status'], resp['data']['statusText'])
-                 ,h , body)
+        return ( resp['data']['status'], resp['data']['statusText'],
+                 h , body)
 
     def _wait_for_response(self, id):
         d = Deferred()
