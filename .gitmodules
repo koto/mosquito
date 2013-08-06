@@ -7,3 +7,6 @@
 [submodule "externals/mitmproxy"]
 	path = externals/mitmproxy
 	url = https://github.com/mitmproxy/mitmproxy.git
+[submodule "externals/netlib"]
+	path = externals/netlib
+	url = https://github.com/mitmproxy/netlib
