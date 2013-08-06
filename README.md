@@ -20,10 +20,10 @@ Requirements
 
   * Python 2.x (http://www.python.org/download/)
   * [mitmproxy](http://mitmproxy.org)
-  * [websockify](https://github.com/kanaka/websockify) (Python and some libs to run it)
-  * PyOpenSSL (https://pypi.python.org/pypi/pyOpenSSL)
-  * pyasn1 (https://pypi.python.org/pypi/pyasn1)
-  * flask (https://pypi.python.org/pypi/flask)
+  * [websockify](https://github.com/kanaka/websockify)
+  * [PyOpenSSL](https://pypi.python.org/pypi/pyOpenSSL)
+  * [pyasn1](https://pypi.python.org/pypi/pyasn1)
+  * [flask](https://pypi.python.org/pypi/flask)
 
 
   * a confirmed content-script XSS vulnerability in Google Chrome extension
@@ -38,6 +38,7 @@ Installation
   		$ git submodule update --init --recursive
 
   2. Install dependencies
+
       $ easy_install pyopenssl
       $ easy_install pyasn1
       $ easy_install flask
@@ -45,21 +46,25 @@ Installation
 Usage
 -----
 
-  1. Launch Mosquito server
+  1. Find XSS vulnerability in Google Chrome extension
+
+     Scan, review the code etc. See e.g. [I'm in your browser, pwning your stuff](https://www.hackinparis.com/talk-krzysztof-kotowicz) presentation or [my blog](http://blog.kotowicz.net/search/label/chrome)
+
+  2. Do the [dance](http://www.youtube.com/watch?v=qkthxBsIeGQ)!
+
+  3. Launch Mosquito server
 
 	    $ python mosquito/start.py 8082 4444 --http 8000
     
      This will launch Mosquito server with HTTP proxy on `127.0.0.1:4444` and Mosquito WebSocket proxy on `*:8082`.
      Additionally `webroot/` dir will be served over `*:8000`
 
-  2. Find XSS vulnerability in Google Chrome extension
-
-  3. Generate mosquito hook at `http://localhost:8000/generate.html`. Victim MUST be able
+  4. Generate mosquito hook at `http://localhost:8000/generate.html`. Victim MUST be able
      to connect to `base_url` HTTP server and to `ws_host:ws_port` WebSocket server.
 
-  4. Inject hook into extension
+  5. Inject hook into extension installed in victim's browser
 
-  5. Use `localhost:4444` as your HTTP proxy. You now can use Burp or your browser to send
+  6. Use `localhost:4444` as your HTTP proxy. You now can use Burp or your browser to send
      requests and receive responses.
 
 
