@@ -6,8 +6,12 @@ from defer import *
 import json
 import re
 import base64
+import logging
 
 class MosquitoRequest:
+    """
+        Class used to represent URL request being sent over the wire to Mosquito JS client
+    """
     counter = 0
 
     def __init__(self, typ, data):
@@ -21,10 +25,14 @@ class MosquitoRequest:
 
 class MosquitoRequestHandler(SocketServer.BaseRequestHandler):
 
+    """
+    Class handling incoming TCP connections from Mosquito JS clients
+    Uses Custom protocol - JSON objects separated with separator
+    """
     End="\n:WSEP:\n"
 
     def handle(self):
-        print "handle"
+        logging.debug("MosquitoRequestHandler.handle")
         self.server.last_client = self
 
         while True:
@@ -32,6 +40,7 @@ class MosquitoRequestHandler(SocketServer.BaseRequestHandler):
             try:
                 msg = json.loads(data)
             except ValueError:
+                logging.error("Error reading from Mosquito Client")
                 f = open('error.log', 'w')
                 f.write(data)
                 f.close()
@@ -60,18 +69,14 @@ class MosquitoRequestHandler(SocketServer.BaseRequestHandler):
                         break
         return ''.join(total_data)
 
-    def handle_hello(self, d):
-        print 'oh hello'
-        cur_thread = threading.current_thread()
-        response = "{}: {}".format(cur_thread.name, d)
-        print response
+    def handle_hello(self, d):        
+        logging.info("Mosquito client connected: %s", d)
 
     def handle_incoming_response(self, msg):
-        print 'response to req #%d' % msg['id']
+        logging.debug('Response to req #%d', msg['id'])
         self.server.call_defer(msg['id'], msg)
 
     def process_response(self, resp):
-        print "processing"
         h = []
         if 'headers' in resp['data']:
             h = re.findall(r"(?P<name>.*?): (?P<value>.*?)\r\n", resp['data']['headers'])
@@ -96,7 +101,6 @@ class MosquitoRequestHandler(SocketServer.BaseRequestHandler):
         
         t = ('Content-Length', str(len(body)))
         h.append(t)
-        print t
 
         return ( resp['data']['status'], resp['data']['statusText'],
                  h , body)
@@ -117,7 +121,7 @@ class MosquitoRequestHandler(SocketServer.BaseRequestHandler):
         return_value(retval)
 
     def send_request_and_wait(self, request):
-        print 'sending req #%d' % request.id
+        logging.debug('sending req #%d', request.id)
         defer = self._send_request_deferred(request)
         while not defer.called:
             pass
@@ -125,6 +129,10 @@ class MosquitoRequestHandler(SocketServer.BaseRequestHandler):
 
 
 class MosquitoTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+    """
+        Mosquito TCP server, handling incoming connections in separate threads
+    """
+
     allow_reuse_address = True
     daemon_threads = True
 
@@ -134,7 +142,7 @@ class MosquitoTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 
     def add_defer(self, id, defer):
         self.defers[id] = defer
-        print "Queue len: %d" % len(self.defers)
+        logging.debug("Queue len: %d", len(self.defers))
 
     def call_defer(self, id, callback_params):
         if not id in self.defers:

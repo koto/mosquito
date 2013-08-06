@@ -21,7 +21,7 @@ To communicate with MalaRIA I use [WebSockets](http://dev.w3.org/html5/websocket
 Requirements
 ------------
 
-  * [MalaRIA](https://github.com/koto/MalaRIA-Proxy) (JDK to compile)
+  * [mitmproxy](http://mitmproxy.org)
   * [websockify](https://github.com/kanaka/websockify) (Python and some libs to run it)
   * a confirmed content-script XSS vulnerability in Google Chrome extension
 
@@ -34,10 +34,6 @@ Installation
   		$ cd mosquito
   		$ git submodule update --init --recursive
 
-  2. Compile MalaRIA
-
-        $ cd externals/MalaRIA-Proxy/proxy-backend
-        $ javac malaria/*.java
 
 Usage
 -----
@@ -46,11 +42,10 @@ Usage
 
 		$ ./http-server.py webroot/ 8000
 
-  2. Launch MalaRIA server
+  2. Launch Mosquito server
 
-	    $ cd externals/MalaRIA-Proxy/proxy-backend
-	    $ java malaria.MalariaServer dummy 8081 4444
-          # launch malaria server with HTTP proxy on 4444 and connector proxy on 8081
+	    $ python mosquito/start.py 8081 4444
+          # launch Mosquito server with HTTP proxy on 4444 and connector proxy on 8081
 
   3. Launch Websockify proxy
 

@@ -2,12 +2,22 @@ from server import MosquitoTCPServer, MosquitoRequestHandler, MosquitoRequest
 import threading
 from libmproxy import flow
 from netlib.odict import ODictCaseless
+import logging
 
-class MosquitoConnector:
-
+class MosquitoToMitmproxyConnector:
+    """
+        Class used to get HTTP(s) requests from mitmproxy codebase and proxy them
+        via Mosquito TCP server.
+    """
+    
     def __init__(self, host, port):
+        """
+            Starts Mosquito TCP server
+        """
         self.server = MosquitoTCPServer((host, port), MosquitoRequestHandler)
         ip, port = self.server.server_address
+        self.ip = ip
+        self.port = port
 
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
@@ -16,14 +26,12 @@ class MosquitoConnector:
         self.server_thread.daemon = True
         self.server_thread.start()
 
-    def shutdown(self):
-        pass
-
     def build_mosquito_request(self, r):
         flatheaders = []
         for i in r.headers.keys():
             flatheaders.append([i, "".join(r.headers.get(i))])
-        print flatheaders
+        
+        logging.info("%s %s", r.method, r.get_url())
 
         m_r = MosquitoRequest('xhr',{
             'url': r.get_url(), 
@@ -34,10 +42,10 @@ class MosquitoConnector:
         return m_r        
     
     def build_flow_response(self, req, status, status_text, headers, body):
-
         headers = ODictCaseless()
         for k,v in headers:
             headers[k] = v
+        logging.info("%d %s (%d) [%s %s]: ", status, status_text, len(body), req.method, req.get_url())
         resp = flow.Response(req,
                 [1,1],
                 status, status_text,
@@ -59,7 +67,7 @@ class MosquitoConnector:
             url += '?' + environ['QUERY_STRING']
 
         hdrs = []
-        print environ
+
         for k, v in environ.iteritems():
             if k.startswith('HTTP_'):
                 hdrs.append([k[5:].capitalize().replace('_', '-'), v])
@@ -76,7 +84,6 @@ class MosquitoConnector:
 
         status, status_text, headers, body = self.server.last_client.send_request_and_wait(r)
         status = "%d %s" % (resp['data']['status'], resp['data']['statusText'])
-        #print headers, body
         start_response(status, headers)
-        print "end wsgi"
+        logging.debug("end wsgi")
         return [body]
