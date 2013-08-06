@@ -30,6 +30,7 @@ class MosquitoRequestHandler(SocketServer.BaseRequestHandler):
     Uses Custom protocol - JSON objects separated with separator
     """
     End="\n:WSEP:\n"
+    last_data = ''
 
     def handle(self):
         logging.debug("MosquitoRequestHandler.handle")
@@ -55,9 +56,11 @@ class MosquitoRequestHandler(SocketServer.BaseRequestHandler):
     def recv_end(self,the_socket):
         total_data=[];data=''
         while True:
-                data=the_socket.recv(8192)
+                data=self.last_data+the_socket.recv(8192)
+                self.last_data = ""
                 if self.End in data:
                     total_data.append(data[:data.find(self.End)])
+                    self.last_data = data[data.find(self.End)+len(self.End):]
                     break
                 total_data.append(data)
                 if len(total_data)>1:
@@ -65,6 +68,7 @@ class MosquitoRequestHandler(SocketServer.BaseRequestHandler):
                     last_pair=total_data[-2]+total_data[-1]
                     if self.End in last_pair:
                         total_data[-2]=last_pair[:last_pair.find(self.End)]
+                        self.last_data = last_pair[last_pair.find(self.End)+len(self.End):]
                         total_data.pop()
                         break
         return ''.join(total_data)
