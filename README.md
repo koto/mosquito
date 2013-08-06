@@ -31,15 +31,15 @@ Installation
 
   1. Clone the repository
 
-  		$ git clone git://github.com/koto/mosquito.git
-  		$ cd mosquito
-  		$ git submodule update --init --recursive
+        $ git clone https://github.com/koto/mosquito.git
+        $ cd mosquito
+        $ git submodule update --init --recursive
 
   2. Install dependencies
 
-      $ easy_install pyopenssl
-      $ easy_install pyasn1
-      $ easy_install flask
+        $ easy_install pyopenssl
+        $ easy_install pyasn1
+        $ easy_install flask
 
 Usage
 -----
@@ -52,7 +52,7 @@ Usage
 
   3. Launch Mosquito server
 
-	    $ python mosquito/start.py 8082 4444 --http 8000
+        $ python mosquito/start.py 8082 4444 --http 8000
     
      This will launch Mosquito server with HTTP proxy on `127.0.0.1:4444` and Mosquito WebSocket proxy on `*:8082`.
      Additionally `webroot/` dir will be served over `*:8000`

@@ -108,7 +108,7 @@ def main(argv):
     if ws_port:
         if sys.platform == 'win32':
             # start websockify.exe
-            ws_p = Process(target=start_ws_exe, args=[script_dir, options.ws_port, connector.ip, connector.port])
+            ws_p = Process(target=start_ws_exe, args=[script_dir, ws_port, connector.ip, connector.port])
             ws_p.start()
         else:    
             # start WebSocket server in separate port
