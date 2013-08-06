@@ -21,6 +21,7 @@ def add_to_path(relative_dir):
        sys.path.insert(0, add_path)
 
 add_to_path('../externals/mitmproxy')
+add_to_path('../externals/netlib')
 add_to_path('../externals/websockify')
 
 from libmproxy import controller, proxy, flow
