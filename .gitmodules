@@ -4,3 +4,6 @@
 [submodule "externals/websockify"]
 	path = externals/websockify
 	url = git://github.com/kanaka/websockify.git
+[submodule "externals/mitmproxy"]
+	path = externals/mitmproxy
+	url = https://github.com/mitmproxy/mitmproxy.git

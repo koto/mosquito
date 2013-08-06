@@ -139,6 +139,7 @@ class MosquitoTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 
     allow_reuse_address = True
     daemon_threads = True
+    last_client = None
 
     def __init__(self, server_address, RequestHandlerClass):
         SocketServer.TCPServer.__init__(self, server_address, RequestHandlerClass)
@@ -150,7 +151,8 @@ class MosquitoTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 
     def call_defer(self, id, callback_params):
         if not id in self.defers:
-            raise KeyError('fuuuuu!')
+            logging.error("id not found in deferred requests: %d", id)
+            return
         d = self.defers[id]
         d.callback(callback_params)
         del(self.defers[id])

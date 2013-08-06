@@ -94,12 +94,10 @@
                 xhr._method = method;
                 xhr._types_left = types;
                 xhr._type = current_type;
-                //if (body) {
-                //    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                //}
                 for (var i = 0; i < headers.length; i++) {
-                    // try..catch
-                    xhr.setRequestHeader(headers[i][0], headers[i][1]);
+                    try {
+                        xhr.setRequestHeader(headers[i][0], headers[i][1]);
+                    } catch (e) {}
                 }
                 xhr._body = body;
                 var self = this;
@@ -167,11 +165,25 @@
     }
 
     function parseRequestFromProxy(req) {
-        // req = "METHOD URL ACCEPT-HEADER-VALUE"
         log("Received: " + req);
-        req = JSON.parse(req)
-        if (req[1] == 'xhr') {
-            requestXhr(req);
+        try {
+            reqobj = JSON.parse(req)
+        } catch (e) {
+            if (req.indexOf('][') !== -1) { // multiple reqests sent in one message
+                reqs = req.split('][');
+                for (var i = 0; i < reqs.length; i++)
+                    processRequestObject(reqs[i] + ((i == reqs.length -1) ? '' : ']'));
+                return;
+            }
+
+            throw e;
+        }
+        processRequestObject(reqobj);
+    }
+
+    function processRequestObject(reqobj) {
+        if (reqobj[1] == 'xhr') {
+            requestXhr(reqobj);
         }
     }
 

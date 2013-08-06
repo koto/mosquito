@@ -57,6 +57,9 @@ class MosquitoToMitmproxyConnector:
     def handle_flow_request(self, r):
         m_req = self.build_mosquito_request(r)
 
+        while not self.server.last_client:
+            pass
+
         status, statusText, headers, body = self.server.last_client.send_request_and_wait(m_req)
         m_resp = self.build_flow_response(r, status, statusText, headers, body)
         r.reply(m_resp)
@@ -81,6 +84,9 @@ class MosquitoToMitmproxyConnector:
             'headers': hdrs,
             'body': environ['wsgi.input'].read(),
         })
+
+        while not self.server.last_client:
+            pass
 
         status, status_text, headers, body = self.server.last_client.send_request_and_wait(r)
         status = "%d %s" % (resp['data']['status'], resp['data']['statusText'])
