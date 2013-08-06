@@ -10,17 +10,15 @@ Introduction
 -----------
 Mosquito is a tool to exploit common XSS vulnerabilities in Google Chrome extensions. Chrome extensions can often submit unrestricted XHR requests to any domain, making them a perfect tool to abuse. It allows the attacker to easily generate XSS payloads that setup peristent connection from victim browsers to given Mosquito server. Mosquito server in turn allows the attacker to instrument victim's XMLHttpRequest object via setting up a HTTP Proxy. 
 
-Upon successful exploitation attacker can access websites through victim's browser and easily hijack user sessions (sort of like [XSS-Proxy](http://xss-proxy.sourceforge.net/). If exploited Google Chrome extension had wildcard URL patterns, attacker can also navigate to sites outside exploited origin (e.g. Gmail domain, intranet addresses etc.).
+Upon successful exploitation attacker can access websites through victim's browser and easily hijack user sessions (sort of like [XSS-Proxy](http://xss-proxy.sourceforge.net/)). If exploited Google Chrome extension had wildcard URL patterns (and lots of them do), attacker can also navigate to sites outside exploited origin (e.g. Gmail domain, intranet addresses etc.). Think of it as *XSS in Chrome Extesion to HTTP Proxy bridge*
 
-Mosquito was originally based on [MalaRIA](http://erlend.oftedal.no/blog/?blogid=107), a proof-of-concept made by [Erlend Oftedal](http://erlend.oftedal.no) demonstrating a proxy abusing unrestricted cross domain policies na it is heavily influenced by its architecture. However lots of changes have been introduced, and the project is now fully Python-based, HTTPS compatible thanks to [mitmproxy](http://mitmproxy.org), and [WebSockets](http://dev.w3.org/html5/websockets/) protocol is used for transport.
+Mosquito was originally based on [MalaRIA](http://erlend.oftedal.no/blog/?blogid=107), a proof-of-concept made by [Erlend Oftedal](http://erlend.oftedal.no) demonstrating a proxy abusing unrestricted cross domain policies and it is heavily influenced by its architecture. However lots of changes have been introduced, and the project is now fully Python-based, multi-threaded, HTTPS compatible thanks to [mitmproxy](http://mitmproxy.org), and [WebSockets](http://dev.w3.org/html5/websockets/) protocol is used for transport.
 
 
 Requirements
 ------------
 
   * Python 2.x (http://www.python.org/download/)
-  * [mitmproxy](http://mitmproxy.org)
-  * [websockify](https://github.com/kanaka/websockify)
   * [PyOpenSSL](https://pypi.python.org/pypi/pyOpenSSL)
   * [pyasn1](https://pypi.python.org/pypi/pyasn1)
   * [flask](https://pypi.python.org/pypi/flask)
@@ -83,3 +81,4 @@ See also
 --------
   * [cors-proxy-browser](http://koto.github.io/cors-proxy-browser/)
   * [mitmproxy](http://mitmproxy.org/)
+  * [websockify](https://github.com/kanaka/websockify)
