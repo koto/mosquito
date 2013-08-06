@@ -8,21 +8,24 @@ With this tool attacker can exploit content-script XSS vulnerabilities in extens
 
 Introduction
 -----------
-Mosquito relies on MalaRIA, a proof-of-concept made by [Erlend Oftedal](http://erlend.oftedal.no) demonstrating a proxy abusing unrestricted cross domain policies.
-MalaRIA is made of two parts: the Flash/Silverlight connector(s) launched on a victim browser, and a Java-based server. Victim visits the page with the connector, it establishes connection with server and from now on victim's browser can be used as a proxy by the attacker (Flash/Sliverlight processes the requests from the MalaRIA server and sends the responses back). Attacker controls MalaRIA in his browser by simply pointing to the HTTP proxy opened by MalaRIA.
+Mosquito is a tool to exploit common XSS vulnerabilities in Google Chrome extensions. Chrome extensions can often submit unrestricted XHR requests to any domain, making them a perfect tool to abuse. It allows the attacker to easily generate XSS payloads that setup peristent connection from victim browsers to given Mosquito server. Mosquito server in turn allows the attacker to instrument victim's XMLHttpRequest object via setting up a HTTP Proxy. 
 
-Originally MalaRIA demonstrated that permissive crossdomain.xml files are bad (because attacker can read it e.g. via the MalaRIA proxy) and used Flash files to issue requests.
+Upon successful exploitation attacker can access websites through victim's browser and easily hijack user sessions (sort of like [XSS-Proxy](http://xss-proxy.sourceforge.net/). If exploited Google Chrome extension had wildcard URL patterns, attacker can also navigate to sites outside exploited origin (e.g. Gmail domain, intranet addresses etc.).
 
-Mosquito instead of using Flash files leverages common XSS vulnerabilities in Google Chrome extensions. Chrome extensions can often submit urestricted XHR requests to any domain, making them a perfect tool to abuse.
-
-To communicate with MalaRIA I use [WebSockets](http://dev.w3.org/html5/websockets/) protocol (because I don't have raw flash/silverlight sockets available).
+Mosquito was originally based on [MalaRIA](http://erlend.oftedal.no/blog/?blogid=107), a proof-of-concept made by [Erlend Oftedal](http://erlend.oftedal.no) demonstrating a proxy abusing unrestricted cross domain policies na it is heavily influenced by its architecture. However lots of changes have been introduced, and the project is now fully Python-based, HTTPS compatible thanks to [mitmproxy](http://mitmproxy.org), and [WebSockets](http://dev.w3.org/html5/websockets/) protocol is used for transport.
 
 
 Requirements
 ------------
 
-  * [MalaRIA](https://github.com/koto/MalaRIA-Proxy) (JDK to compile)
+  * Python 2.x (http://www.python.org/download/)
+  * [mitmproxy](http://mitmproxy.org)
   * [websockify](https://github.com/kanaka/websockify) (Python and some libs to run it)
+  * PyOpenSSL (https://pypi.python.org/pypi/pyOpenSSL)
+  * pyasn1 (https://pypi.python.org/pypi/pyasn1)
+  * flask (https://pypi.python.org/pypi/flask)
+
+
   * a confirmed content-script XSS vulnerability in Google Chrome extension
 
 Installation
@@ -34,52 +37,33 @@ Installation
   		$ cd mosquito
   		$ git submodule update --init --recursive
 
-  2. Compile MalaRIA
-
-        $ cd externals/MalaRIA-Proxy/proxy-backend
-        $ javac malaria/*.java
+  2. Install dependencies
+      $ easy_install pyopenssl
+      $ easy_install pyasn1
+      $ easy_install flask
 
 Usage
 -----
 
-  1. Serve `webroot/` directory via HTTP server - e.g.
+  1. Launch Mosquito server
 
-		$ ./http-server.py webroot/ 8000
+	    $ python mosquito/start.py 8082 4444 --http 8000
+    
+     This will launch Mosquito server with HTTP proxy on `127.0.0.1:4444` and Mosquito WebSocket proxy on `*:8082`.
+     Additionally `webroot/` dir will be served over `*:8000`
 
-  2. Launch MalaRIA server
+  2. Find XSS vulnerability in Google Chrome extension
 
-	    $ cd externals/MalaRIA-Proxy/proxy-backend
-	    $ java malaria.MalariaServer dummy 8081 4444
-          # launch malaria server with HTTP proxy on 4444 and connector proxy on 8081
-
-  3. Launch Websockify proxy
-
-     Linux
-
-	    $ cd externals/websockify
-	    $ python ./websockify.py 8082 localhost:8081
-	      # forwards WebSocket connection from TCP:8082 via MalaRIA running on 8081
-
-	 Windows
-
-	    $ cd externals\websockify-exe
-	    $ websockify.exe 8082 localhost:8081
-
-     **You can also use `run.bat` on Windows / `run.sh` on Ubuntu-based systems
-     to perform steps 1-3 for you.**
-
-  4. Find XSS vulnerability in Google Chrome extension
-
-  5. Generate mosquito hook at `http://localhost:8000/generate.html`. Victim MUST be able
+  3. Generate mosquito hook at `http://localhost:8000/generate.html`. Victim MUST be able
      to connect to `base_url` HTTP server and to `ws_host:ws_port` WebSocket server.
 
-  6. Inject hook into extension
+  4. Inject hook into extension
 
-  7. Use `localhost:4444` as your HTTP proxy. You now can use Burp or your browser to send
+  5. Use `localhost:4444` as your HTTP proxy. You now can use Burp or your browser to send
      requests and receive responses.
 
 
-Licence
+License
 -------
 Mosquito - Chrome Extension exploitation tool Copyright (C) 2013 Krzysztof Kotowicz - http://blog.kotowicz.net
 
@@ -92,5 +76,5 @@ You should have received a copy of the GNU General Public License along with thi
 
 See also
 --------
-  * [MalaRIA](http://erlend.oftedal.no/blog/?blogid=107)
   * [cors-proxy-browser](http://koto.github.io/cors-proxy-browser/)
+  * [mitmproxy](http://mitmproxy.org/)

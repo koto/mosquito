@@ -6,12 +6,13 @@
  **/
 (function(d) {
 
+    SEPARATOR = "\n:WSEP:\n";
     // to be removed
     function log(m) {
         console.debug(m);
     }
 
-    function bind(scope, fn) {
+    function bindf(scope, fn) {
         return function() {
             fn.apply(scope, arguments);
         };
@@ -44,7 +45,6 @@
     var scriptUrl = '';
     var scripts = d.getElementsByTagName('script');
     for (var i = 0; i < scripts.length ; i++) {
-        log(scripts[i]);
         if (scripts[i].src.match(/mosquito\.js/)) {
             var tmp = document.createElement('a');
             tmp.href = scripts[i].src.replace(/\?.*/, '');
@@ -75,25 +75,29 @@
                 throw 'Unsupported request processor type: ' + type;
             },
 
-            sendRequest: function(event, types, url, method, body) {
+            sendRequest: function(event, types, url, method, body, headers, xtra) {
                 log("Sending XHR request to " + url);
                 var current_type = types.shift();
                 var xhr = this.factory(current_type);
                 // get first available type
                 xhr.open(method, url, true);
+                xhr.responseType = 'arraybuffer';
                 if (current_type === 'cors-withcredentials') {
                     xhr.withCredentials = 'true';
                 }
                 if (typeof xhr.overrideMimeType !== "undefined") {
-                    xhr.overrideMimeType('text/plain; charset=x-user-defined');
+                //    xhr.overrideMimeType('text/plain; charset=x-user-defined');
                 }
 
+                xhr._xtra = xtra;
                 xhr._url = url;
                 xhr._method = method;
                 xhr._types_left = types;
                 xhr._type = current_type;
-                if (body) {
-                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                for (var i = 0; i < headers.length; i++) {
+                    try {
+                        xhr.setRequestHeader(headers[i][0], headers[i][1]);
+                    } catch (e) {}
                 }
                 xhr._body = body;
                 var self = this;
@@ -111,13 +115,13 @@
 
             handleSuccess: function(event, xhr) {
                 xhr._end_time = new Date().getTime();
-                $('body').trigger('response-load', [xhr.responseText, xhr]);
+                jQuery('html').trigger('response-load', [xhr.response, xhr]);
             },
 
             handleError: function(event, xhr) {
                 log('error');
                 if (xhr._types_left.length == 0) {
-                    $('body').trigger('response-error', xhr);
+                    jQuery('html').trigger('response-error', xhr);
                 } else {
                     this.fallback(xhr);
                 }
@@ -147,19 +151,40 @@
 
     var fr = new FileReader;
 
-    function requestUrl(url, method) {
+    function requestXhr(request) {
         var use_methods = ['cors-withcredentials'];
         // USE ['flash'] instead to use flash only, see browser.html
-        $('body').trigger('request-start', [ use_methods, url, method, null ]);
+        jQuery('html').trigger('request-start', [ 
+            use_methods, 
+            request[2].url, 
+            request[2].method, 
+            request[2].body,
+            request[2].headers,
+            request[0] // id
+        ]);
     }
 
     function parseRequestFromProxy(req) {
-        // req = "METHOD URL ACCEPT-HEADER-VALUE"
-        var parts = req.split(' ');
-
         log("Received: " + req);
-        if (parts.length >= 2)
-            requestUrl(parts[1], parts[0]); // we ignore the accept type for now
+        try {
+            reqobj = JSON.parse(req)
+        } catch (e) {
+            if (req.indexOf('][') !== -1) { // multiple reqests sent in one message
+                reqs = req.split('][');
+                for (var i = 0; i < reqs.length; i++)
+                    processRequestObject(reqs[i] + ((i == reqs.length -1) ? '' : ']'));
+                return;
+            }
+
+            throw e;
+        }
+        processRequestObject(reqobj);
+    }
+
+    function processRequestObject(reqobj) {
+        if (reqobj[1] == 'xhr') {
+            requestXhr(reqobj);
+        }
     }
 
     var readByteAt = function(i, fileContents){
@@ -167,6 +192,21 @@
     };
 
     function returnResponseToProxy(d) {
+
+        if (d.response.bytes) {
+            delete d.response.body;
+        }
+
+        var r = {
+            id: d.id,
+            data: d.response,
+            result: d.result
+        }
+
+        log('sending response to req #' + r.id)
+        p.send(JSON.stringify(r) + SEPARATOR);
+        return;
+
         var response = '';
         var binaryBody = null;
         if (d.result === 'ok') {
@@ -177,12 +217,19 @@
                 binaryBody[i] = d.response.bytes[i];
               }
             }
+            log(d.response.bytes.length + ' bytes')
             response = d.response.body; // MalaRIA does not report headers back to proxy clients
         } else {
             log("Received error XHR response");
             // todo 502
             //document.getElementById('response').value = event.data;
             response = 'HTTP/1.1 502 Not accessible - ' + d;
+        }
+
+        var r = {
+            id: d.id,
+            data: response,
+            result: d.result
         }
 
         if (binaryBody) {
@@ -209,7 +256,9 @@
                 fr.onload = function(e) {
                     parseRequestFromProxy(e.target.result);
                 };
-                p.send('Hello from ' + d.location.href);
+                p.send(JSON.stringify({
+                    hello: 'Hello ' + d.location.href
+                }) + SEPARATOR);
                 p.onmessage = function(e) {
                     fr.readAsBinaryString(e.data);
                 };
@@ -230,7 +279,7 @@
                 this.source = event.source;
                 if (reqparams.length == 4) {
                     // types, url, method, body
-                    $('body').trigger('request-start', reqparams);
+                    jQuery('html').trigger('request-start', reqparams);
                 }
             } catch(e) {}
         },
@@ -238,6 +287,7 @@
             return {
                 result: undefined,
                 duration: xhr._end_time - xhr._start_time,
+                id: xhr._xtra,
                 response: {
                     body: undefined,
                     headers: undefined,
@@ -258,14 +308,15 @@
         sendError: function(event, xhr) {
             var obj = this.prepareResult(xhr);
             obj.result = 'error';
-            var data = JSON.stringify(obj);
+            obj.response.status = 500;
+            obj.response.statusText = "Client error"
             returnResponseToProxy(obj);
         },
         sendResponse: function(event, text, xhr) {
             var obj = this.prepareResult(xhr);
             obj.result = 'ok';
-            obj.response.body = text;
-            obj.response.bytes = Array.prototype.map.call(text, this.byteValue);
+            obj.response.body = base64ArrayBuffer(text);
+            //obj.response.bytes = Array.prototype.map.call(text, this.byteValue);
             obj.response.headers = (xhr.getAllResponseHeaders ? xhr.getAllResponseHeaders() : null);
             returnResponseToProxy(obj);
         },
@@ -274,11 +325,63 @@
         }
     }
 
+    function base64ArrayBuffer(arrayBuffer) {
+      var base64    = ''
+      var encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+     
+      var bytes         = new Uint8Array(arrayBuffer)
+      var byteLength    = bytes.byteLength
+      var byteRemainder = byteLength % 3
+      var mainLength    = byteLength - byteRemainder
+     
+      var a, b, c, d
+      var chunk
+     
+      // Main loop deals with bytes in chunks of 3
+      for (var i = 0; i < mainLength; i = i + 3) {
+        // Combine the three bytes into a single integer
+        chunk = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2]
+     
+        // Use bitmasks to extract 6-bit segments from the triplet
+        a = (chunk & 16515072) >> 18 // 16515072 = (2^6 - 1) << 18
+        b = (chunk & 258048)   >> 12 // 258048   = (2^6 - 1) << 12
+        c = (chunk & 4032)     >>  6 // 4032     = (2^6 - 1) << 6
+        d = chunk & 63               // 63       = 2^6 - 1
+     
+        // Convert the raw binary segments to the appropriate ASCII encoding
+        base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d]
+      }
+     
+      // Deal with the remaining bytes and padding
+      if (byteRemainder == 1) {
+        chunk = bytes[mainLength]
+     
+        a = (chunk & 252) >> 2 // 252 = (2^6 - 1) << 2
+     
+        // Set the 4 least significant bits to zero
+        b = (chunk & 3)   << 4 // 3   = 2^2 - 1
+     
+        base64 += encodings[a] + encodings[b] + '=='
+      } else if (byteRemainder == 2) {
+        chunk = (bytes[mainLength] << 8) | bytes[mainLength + 1]
+     
+        a = (chunk & 64512) >> 10 // 64512 = (2^6 - 1) << 10
+        b = (chunk & 1008)  >>  4 // 1008  = (2^6 - 1) << 4
+     
+        // Set the 2 least significant bits to zero
+        c = (chunk & 15)    <<  2 // 15    = 2^4 - 1
+     
+        base64 += encodings[a] + encodings[b] + encodings[c] + '='
+      }
+      
+      return base64
+    }
+
     function init() {
         log('Mosquito init');
-        $('body').bind('request-start', bind(Connector, Connector.sendRequest));
-        $('body').bind('response-load', bind(remoteController, remoteController.sendResponse));
-        $('body').bind('response-error', bind(remoteController, remoteController.sendError));
+        jQuery('html').bind('request-start', bindf(Connector, Connector.sendRequest));
+        jQuery('html').bind('response-load', bindf(remoteController, remoteController.sendResponse));
+        jQuery('html').bind('response-error', bindf(remoteController, remoteController.sendError));
         launchMalariaConnector();
     }
 

@@ -1,6 +1,9 @@
-[submodule "externals/MalaRIA-Proxy"]
-	path = externals/MalaRIA-Proxy
-	url = git://github.com/koto/MalaRIA-Proxy.git
 [submodule "externals/websockify"]
 	path = externals/websockify
 	url = git://github.com/kanaka/websockify.git
+[submodule "externals/mitmproxy"]
+	path = externals/mitmproxy
+	url = https://github.com/mitmproxy/mitmproxy.git
+[submodule "externals/netlib"]
+	path = externals/netlib
+	url = https://github.com/mitmproxy/netlib
