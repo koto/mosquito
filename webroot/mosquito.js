@@ -149,8 +149,6 @@
 
     var p;
 
-    var fr = new FileReader;
-
     function requestXhr(request) {
         var use_methods = ['cors-withcredentials'];
         // USE ['flash'] instead to use flash only, see browser.html
@@ -166,13 +164,25 @@
 
     function parseRequestFromProxy(req) {
         log("Received: " + req);
+        var reqobj;
         try {
-            reqobj = JSON.parse(req)
+            reqobj = JSON.parse(req);
         } catch (e) {
             if (req.indexOf('][') !== -1) { // multiple reqests sent in one message
+                // extract [req][req][req] requests manually 
                 reqs = req.split('][');
-                for (var i = 0; i < reqs.length; i++)
-                    processRequestObject(reqs[i] + ((i == reqs.length -1) ? '' : ']'));
+                for (var i = 0; i < reqs.length; i++) {
+                    if (i > 0) {
+                        var reqstr = '[';
+                    } else {
+                        reqstr = ''
+                    };
+
+                    reqstr += reqs[i] + ((i == reqs.length -1) ? '' : ']');
+
+                    reqobj = JSON.parse(reqstr);
+                    processRequestObject(reqobj);
+                }
                 return;
             }
 
@@ -243,7 +253,7 @@
         }
     }
 
-    function launchMalariaConnector() {
+    function launchMosquitoConnector() {
         try {
             p = new ReconnectingWebSocket('ws://' + params.ws_host + ':' + params.ws_port, 'binary');
         } catch (e) {
@@ -252,15 +262,18 @@
 
         if (p) {
             p.onopen = function() {
-                log("Connected to MalaRIA at " + p.URL);
-                fr.onload = function(e) {
-                    parseRequestFromProxy(e.target.result);
-                };
+                log("Connected to Mosquito at " + p.URL);
                 p.send(JSON.stringify({
                     hello: 'Hello ' + d.location.href
                 }) + SEPARATOR);
                 p.onmessage = function(e) {
+                    var fr = new FileReader;
+                    fr.onload = function(e) {
+                        parseRequestFromProxy(e.target.result);
+                    };
+                    console.log(e.data);
                     fr.readAsBinaryString(e.data);
+                    console.log('read success');
                 };
             };
             p.onerror = function() {
@@ -382,7 +395,7 @@
         jQuery('html').bind('request-start', bindf(Connector, Connector.sendRequest));
         jQuery('html').bind('response-load', bindf(remoteController, remoteController.sendResponse));
         jQuery('html').bind('response-error', bindf(remoteController, remoteController.sendError));
-        launchMalariaConnector();
+        launchMosquitoConnector();
     }
 
     // startup
