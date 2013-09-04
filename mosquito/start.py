@@ -71,9 +71,14 @@ def main(argv):
                   help="Start HTTP server on port HTTP_PORT. Will serve files under webroot/")
     parser.add_option('-w', '--webroot', dest="webroot", default="webroot",
                   help="Directory to serve files from [default: %default]")
-    
+    parser.add_option('-d', '--debug', dest="debug", action="store_true", default=False,
+                  help="Turn debugging on [default: %default]")
 
     (options, args) = parser.parse_args()
+
+    if options.debug:
+        logging.getLogger().setLevel(logging.DEBUG)
+        logging.debug("Debugging mode ON")
 
     if len(args) != 2:
         parser.print_help()
