@@ -39,6 +39,8 @@ class MosquitoToMitmproxyConnector:
             'headers': flatheaders,
             'body': r.content,
         })
+
+        logging.debug("Created req #%d, %s"  %(m_r.id, r.get_url()))
         return m_r        
     
     def build_flow_response(self, req, status, status_text, headers, body):
