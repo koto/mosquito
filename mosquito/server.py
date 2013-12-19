@@ -183,6 +183,15 @@ class MosquitoTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
         except KeyError:
             return None
 
+    def is_default_client(self, id):
+        try:        
+            if self.clients[self.default_client] == self.clients[id]:
+                return True
+        except KeyError:
+            return False
+
+        return False
+
     def register_client(self, client):
         self.clients.append(client)
         logging.info("Registered Mosquito client #%d", len(self.clients) - 1)

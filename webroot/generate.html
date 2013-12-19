@@ -1,13 +1,15 @@
 <head>
-<title>mosquito hook generator</title>
+<title>Mosquito hook generator</title>
 <body>
-<h1>mosquito hook generator</h1>
+<h1>Mosquito hook generator</h1>
+<p><a href="https://github.com/koto/mosquito">Mosquito</a> by <a href="http://blog.kotowicz.net">Krzysztof Kotowicz</a>
 <textarea id=payload type="text/payload" style="height:500px;width:90%" >
 if (!window.xxxx) {
 
 var mosquito_params = {
 	// adjust params below!
-	base_url: 'http://localhost:8000/',
+	// you need to host jquery and mosquito.js at base_url!
+	base_url: 'http://localhost:8000/', 
 	ws_host: 'localhost',
 	ws_port: 8082
 };

@@ -69,12 +69,24 @@ class MosquitoToMitmproxyConnector:
 
     def handle_wsgi_request(self, environ, start_response):
         url = environ['wsgi.url_scheme'] + "://" + environ['HTTP_HOST'] + ':' + environ['SERVER_PORT'] + environ['PATH_INFO']
+
         params = {}
         if environ['QUERY_STRING']:
             url += '?' + environ['QUERY_STRING']
             params = parse_qs(environ['QUERY_STRING'])
 
         logging.debug("start wsgi request %s" % url)
+
+
+        if environ['PATH_INFO'] == '/generate.html': # serve a file
+            body = open('../webroot/generate.html', 'rb').read()
+
+            response_headers = [('Content-Type', 'text/html'),
+                               ('Content-Length', str(len(body)))]
+
+            start_response("200 OK", response_headers)
+            logging.debug("end wsgi")
+            return [body]
 
         message = ''
         # hdrs = []
@@ -102,16 +114,24 @@ class MosquitoToMitmproxyConnector:
 <p>Connected victims:
 <p>Legend: <code>ip:port url (req_sent/resp_recieved last_response_time)</code>
 <ul>%s
-</ul></body>
+</ul>
+<a href="/">refresh</a> | <a href="/generate.html">generate hook</a>
+</body>
 """
         clients = ""
         for k,v in enumerate(self.server.clients):
             clients += '<li>'
-            if self.server.get_client() == self.server.clients[k]:
+            
+            if self.server.is_default_client(k):
                 clients += "<strong>"
+
             clients += escape(str(v), True) + ' <a href="?cmd=switch_client&amp;client=' + str(k) + '">(switch to this)</a>'
             if 'url' in v.hello_msg:
                 clients += ' <a href="%s" target="_blank">(link)</a>' % escape(v.hello_msg['url'], True)
+            
+            if self.server.is_default_client(k):
+                clients += "</strong>"
+
             clients += '</li>'
 
         body = body % (message, clients)
