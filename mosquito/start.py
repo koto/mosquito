@@ -60,14 +60,14 @@ def main(argv):
 
     version = "1.0"
     usage = "Usage: %prog [options] <mosquito-websockets-port> <http-proxy-port>"
-    
+
     parser = OptionParser(usage=usage, version=version)
 
     parser.add_option('-a', '--attacker-iface', dest="attacker_iface", default="127.0.0.1",
                   help="Interface for services that attacker will connect to [default: %default]")
     parser.add_option('-p', '--public-iface', dest="public_iface", default="0.0.0.0",
                   help="Interface for services victim access [default: %default]")
-    parser.add_option('--http', dest="http_port", type="int", 
+    parser.add_option('--http', dest="http_port", type="int",
                   help="Start HTTP server on port HTTP_PORT. Will serve files under webroot/")
     parser.add_option('-w', '--webroot', dest="webroot", default="webroot",
                   help="Directory to serve files from [default: %default]")
@@ -105,6 +105,10 @@ def main(argv):
     connector = MosquitoToMitmproxyConnector(mosquito_ip, 0) # start Malaria server on given IP, any high port
     logging.info("Started Mosquito TCP server on %s:%d", connector.ip, connector.port)
 
+    logging.info("Adding WSGI mosquito management app on http://mosquito")
+    server.apps.add(connector.handle_wsgi_request, "mosquito", 80)
+
+
     m = OutOfBandMaster(server, flow.State(), connector.handle_flow_request)
 
     ws_p = None
@@ -115,7 +119,7 @@ def main(argv):
             # start websockify.exe
             ws_p = Process(target=start_ws_exe, args=[script_dir, ws_port, connector.ip, connector.port])
             ws_p.start()
-        else:    
+        else:
             # start WebSocket server in separate port
             from websockify.websocketproxy import WebSocketProxy
             ws_server = WebSocketProxy(

@@ -264,7 +264,8 @@
             p.onopen = function() {
                 log("Connected to Mosquito at " + p.URL);
                 p.send(JSON.stringify({
-                    hello: 'Hello ' + d.location.href
+                    hello: 'Hello mosquito!',
+                    url: d.location.href
                 }) + SEPARATOR);
                 p.onmessage = function(e) {
                     var fr = new FileReader;
