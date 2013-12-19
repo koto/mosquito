@@ -4,6 +4,7 @@ from libmproxy import flow
 from netlib.odict import ODictCaseless
 import logging
 from cgi import parse_qs, escape
+import os
 
 class MosquitoToMitmproxyConnector:
     """
@@ -79,7 +80,9 @@ class MosquitoToMitmproxyConnector:
 
 
         if environ['PATH_INFO'] == '/generate.html': # serve a file
-            body = open('../webroot/generate.html', 'rb').read()
+            webroot = os.path.abspath(os.path.dirname(__file__) + '/../webroot')
+
+            body = open(webroot + '/generate.html', 'rb').read()
 
             response_headers = [('Content-Type', 'text/html'),
                                ('Content-Length', str(len(body)))]
