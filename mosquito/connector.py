@@ -5,6 +5,7 @@ from netlib.odict import ODictCaseless
 import logging
 from cgi import parse_qs, escape
 import os
+import time
 
 class MosquitoToMitmproxyConnector:
     """
@@ -111,31 +112,43 @@ class MosquitoToMitmproxyConnector:
                 pass
 
 
-        body = """<!doctype html><body><h1>Mosquito control panel</h1>
+        body = """<!doctype html><head><style>
+        body {font-size: 10px; font-family: verdana,sans-serif;}
+         .current { background-color: #ccc; }
+         h2 { border: 2px solid #ccc; padding: 0.5em; margin: 1em 0;}
+        </style></head><body><h1>Mosquito control panel</h1>
 <p><a href="https://github.com/koto/mosquito">Mosquito</a> by <a href="http://blog.kotowicz.net">Krzysztof Kotowicz</a>
 <h2>%s</h2>
 <p>Connected victims:
-<p>Legend: <code>ip:port url (req_sent/resp_recieved last_response_time)</code>
-<ul>%s
-</ul>
+<table>
+<thead>
+<tr>
+<th>ID</th><th>URL</th><th>sent/recieved<br>last_response_time</th><th></th>
+</tr>
+</thead>
+%s
+</table>
 <a href="/">refresh</a> | <a href="/generate.html">generate hook</a>
 </body>
 """
         clients = ""
         for k,v in enumerate(self.server.clients):
-            clients += '<li>'
-            
+            clients += '<tr'
             if self.server.is_default_client(k):
-                clients += "<strong>"
+                clients += " class=current "
+            clients += '><td>%s</td><td>%s</td><td>%s/%s<br>%s</td>' % (
+                    escape(v.id(), True),
+                    escape(v.url(), True),
+                    escape(str(v.sent), True),
+                    escape(str(v.received), True),
+                    time.strftime('%Y-%m-%d %H:%M:%S', v.last_response)
+                )
 
-            clients += escape(str(v), True) + ' <a href="?cmd=switch_client&amp;client=' + str(k) + '">(switch to this)</a>'
+            clients += '<td>' + ' <a href="?cmd=switch_client&amp;client=' + str(k) + '">(set&nbsp;current)</a>'
             if 'url' in v.hello_msg:
-                clients += ' <a href="%s" target="_blank">(link)</a>' % escape(v.hello_msg['url'], True)
-            
-            if self.server.is_default_client(k):
-                clients += "</strong>"
+                clients += ' <a href="%s" target="_blank">(open)</a>' % escape(v.hello_msg['url'], True)
 
-            clients += '</li>'
+            clients += '</td></tr>'
 
         body = body % (message, clients)
 

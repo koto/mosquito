@@ -140,19 +140,28 @@ class MosquitoRequestHandler(SocketServer.BaseRequestHandler):
             pass
         return defer.result
 
-    def __str__(self):
-        id = "?"
-        url = "?"
+    def id(self):
+        id_ = "?"
         try:
-            id = str(self.server.clients.index(self))
-            url = self.hello_msg['url']
+            id_ = str(self.server.clients.index(self))
         except:
             pass
+        return id_
+
+    def url(self):
+        url_ = "?"
+        try:
+            url_ = self.hello_msg['url']
+        except:
+            pass
+        return url_
+
+    def __str__(self):
         return 'Victim #%s: %s:%d %s (%d/%d %s)' % (
-            id,
+            self.id(),
             self.client_address[0],
             self.client_address[1],
-            url,
+            self.url(),
             self.sent,
             self.received,
             time.strftime('%Y-%m-%d %H:%M:%S', self.last_response),
