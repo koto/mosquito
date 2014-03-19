@@ -240,10 +240,10 @@ class MosquitoTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     def build_error_response(self, code, msg):
         return {
             'data': {
-                'body': base64.b64encode(msg),
+                'body': base64.b64encode('<h2>' + msg + '</h2>'),
                 'status': code,
                 'headers': 'Content-Type: text/html',
-                'statusText': '<h2>' + msg + '</h2>'
+                'statusText': msg
             }
         }        
 

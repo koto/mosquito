@@ -62,8 +62,11 @@ class MosquitoToMitmproxyConnector:
     def handle_flow_request(self, r):
         m_req = self.build_mosquito_request(r)
 
-        while not self.server.get_client():
-            pass
+        if not self.server.get_client():
+            r.reply(self.build_flow_response(r, 502, 'No Mosquito client', '', 
+                """<h2>You are not connected to a Mosquito client (or your client died). 
+                Choose one on <a href="http://mosquito/">http://mosquito/</a>"""))
+            return
 
         status, statusText, headers, body = self.server.get_client().send_request_and_wait(m_req)
         m_resp = self.build_flow_response(r, status, statusText, headers, body)
