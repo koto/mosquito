@@ -217,40 +217,6 @@
         p.send(JSON.stringify(r) + SEPARATOR);
         return;
 
-        var response = '';
-        var binaryBody = null;
-        if (d.result === 'ok') {
-            log("Received success XHR response from " + d.request.type);
-            if (d.response.bytes) {
-              binaryBody = new Uint8Array(d.response.bytes.length); // Note:not xhr.responseText
-              for (var i  = 0 ; i < d.response.bytes.length; i++) {
-                binaryBody[i] = d.response.bytes[i];
-              }
-            }
-            log(d.response.bytes.length + ' bytes')
-            response = d.response.body; // MalaRIA does not report headers back to proxy clients
-        } else {
-            log("Received error XHR response");
-            // todo 502
-            //document.getElementById('response').value = event.data;
-            response = 'HTTP/1.1 502 Not accessible - ' + d;
-        }
-
-        var r = {
-            id: d.id,
-            data: response,
-            result: d.result
-        }
-
-        if (binaryBody) {
-            log("Sending " + binaryBody.length + " bytes to MalaRIA");
-            p.send(binaryBody.length + ":");
-            p.send(binaryBody.buffer);
-        } else {
-            log("Sending " + response.length + " characters to MalaRIA");
-            response = response.length + ":" + response;
-            p.send(response);
-        }
     }
 
     function launchMosquitoConnector() {
@@ -319,11 +285,20 @@
                 }
             }
         },
+        str2ab: function(str) {
+            var buf = new ArrayBuffer(str.length);
+            var bufView = new Uint8Array(buf);
+            for (var i=0, strLen=str.length; i<strLen; i++) {
+                bufView[i] = str.charCodeAt(i);
+            }
+            return buf;
+        },     
         sendError: function(event, xhr) {
             var obj = this.prepareResult(xhr);
             obj.result = 'error';
             obj.response.status = 500;
-            obj.response.statusText = "Client error"
+            obj.response.statusText = "Mosquito client error"
+            obj.response.body = base64ArrayBuffer(this.str2ab("Mosquito client error (maybe no x-domain permissions?)"))
             returnResponseToProxy(obj);
         },
         sendResponse: function(event, text, xhr) {

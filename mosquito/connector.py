@@ -132,7 +132,7 @@ class MosquitoToMitmproxyConnector:
 </body>
 """
         clients = ""
-        for k,v in enumerate(self.server.clients):
+        for k,v in enumerate(filter(None, self.server.clients)):
             clients += '<tr'
             if self.server.is_default_client(k):
                 clients += " class=current "

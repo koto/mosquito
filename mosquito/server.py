@@ -120,6 +120,7 @@ class MosquitoRequestHandler(SocketServer.BaseRequestHandler):
     def _wait_for_response(self, id):
         d = Deferred()
         d.add_callback(self.process_response)
+        d.client_id = self.server.clients.index(self)
         self.server.add_defer(id, d)
         return d
 
@@ -205,6 +206,20 @@ class MosquitoTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
         self.clients.append(client)
         logging.info("Registered Mosquito client #%d", len(self.clients) - 1)
 
+    def kick_client_by_addr(self, addr):
+        to_remove = [k for k,v in enumerate(self.clients) if v.client_address == addr]
+        for key in to_remove:
+            
+            # send failing response for pending requests
+            to_remove2 = [k for k in self.defers if self.defers[k].client_id == key]
+            for key2 in to_remove2:
+                logging.info("Removing stale request #%d", key2)
+                self.call_defer(key2, self.build_error_response(501, 'Mosquito client died, consider switching to other client.'))
+            
+            logging.info("Removing Mosquito client #%d", key) 
+
+            self.clients[key] = None
+
     def call_defer(self, id, callback_params):
         if not id in self.defers:
             logging.error("id not found in deferred requests: %d", id)
@@ -212,4 +227,24 @@ class MosquitoTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
         d = self.defers[id]
         d.callback(callback_params)
         del(self.defers[id])
+
+    def handle_error(self, request, client_address):
+        # kill client on error, no mercy
+        logging.info("Socket error, killing request from %s:%d", client_address[0], client_address[1])
+        self.kick_client_by_addr(client_address)
+
+    def close_request(self, request):
+        """Called to clean up an individual request."""
+        request.close()
+    
+    def build_error_response(self, code, msg):
+        return {
+            'data': {
+                'body': base64.b64encode(msg),
+                'status': code,
+                'headers': 'Content-Type: text/html',
+                'statusText': '<h2>' + msg + '</h2>'
+            }
+        }        
+
 
